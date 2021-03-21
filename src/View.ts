@@ -156,12 +156,11 @@ export class View {
         this.lights = [];
         //ADDED
         let l: Light = new Light();
-        l.setAmbient([0.8, 0.8, 0.8]);
+        l.setAmbient([0.5, 0.5, 0.5]);
         l.setDiffuse([0.5, 0.5, 0.5]);
         l.setSpecular([0.5, 0.5, 0.5]);
-        l.setPosition([50, 0, 75]);
+        l.setPosition([300, 300, 100, 1]);
         this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
-    
     }
 
     private setLight(ambient: vec3, diffuse: vec3, specular: vec3, position: vec3): void{
@@ -225,13 +224,18 @@ export class View {
 
     // Easy way to have constant tranformation nodes
     public createTransformNodes(
-                rgb = vec3.fromValues(0,0,0),
-                scale = vec3.fromValues(0,0,0), 
-                rotate = 0, 
-                axis = vec3.fromValues(0,0,0), 
-                translate = vec3.fromValues(0,0,0),
-                transformName: string,
-                nodeName: string): TransformNode
+        scale = vec3.fromValues(0,0,0), 
+        rotate = 0, 
+        axis = vec3.fromValues(0,0,0), 
+        translate = vec3.fromValues(0,0,0),
+        transformName: string,
+        nodeName: string,
+        ambient = vec3.fromValues(0,0,0),
+        diffuse = vec3.fromValues(0,0,0),
+        specular = vec3.fromValues(0,0,0),
+        shininess = 0
+        ): TransformNode
+        
     {
         let transformNode: TransformNode = new TransformNode(this.scenegraph, transformName);
         let transform: mat4 = mat4.create();
@@ -241,10 +245,10 @@ export class View {
         transformNode.setTransform(transform);
         let child: SGNode = new LeafNode("box", this.scenegraph, nodeName);
         let mat: Material = new Material();
-        mat.setAmbient(rgb);
-        mat.setDiffuse([1, 0, 0]);
-        mat.setSpecular([1, 0, 0]);
-        mat.setShininess(5);
+        mat.setAmbient(ambient);
+        mat.setDiffuse(diffuse);
+        mat.setSpecular(specular);
+        mat.setShininess(shininess);
 
         //this.setLight([1, 1, 1], [0,0,0],[0,0,0], translate);
         child.setMaterial(mat);
@@ -260,7 +264,7 @@ export class View {
 
         for(let i: number = -5; i <= 5; i += 1)
         {
-            let transformNode: TransformNode = this.createTransformNodes(this.leaves, vec3.fromValues(5, 100, 15), 25 * i, vec3.fromValues(0,0,1), vec3.fromValues(-300, 110, 180), "treeLeaves-transform", "treeLeaves-Node");
+            let transformNode: TransformNode = this.createTransformNodes(vec3.fromValues(5, 100, 15), 25 * i, vec3.fromValues(0,0,1), vec3.fromValues(-300, 110, 180), "treeLeaves-transform", "treeLeaves-Node", this.leaves, [1, 1, 1], [0.1, 0.1, 0.1], 100);
             leavesNode.addChild(transformNode);
             this.transformsHouse.push(transformNode);
         }
@@ -273,7 +277,7 @@ export class View {
         let treeNode: GroupNode = new GroupNode(this.scenegraph, "tree");
         let leavesNode: GroupNode = new GroupNode(this.scenegraph, "leaves");
 
-        let treeWood: TransformNode = this.createTransformNodes(this.wood, vec3.fromValues(25, 160, 10), 0, vec3.fromValues(0,0,0), vec3.fromValues(-300, 25, 178), "treeWood-transform", "treeWood-Node");
+        let treeWood: TransformNode = this.createTransformNodes(vec3.fromValues(25, 160, 10), 0, vec3.fromValues(0,0,0), vec3.fromValues(-300, 25, 178), "treeWood-transform", "treeWood-Node", this.wood, [1, 1, 1], [0.1, 0.1, 0.1], 100);
         this.transformsHouse.push(treeWood);
         treeNode.addChild(treeWood);
         leavesNode = this.createLeaves();
@@ -286,11 +290,11 @@ export class View {
     {
         let front: GroupNode = new GroupNode(this.scenegraph, "front");
 
-        let frontWall: TransformNode = this.createTransformNodes(this.darkStone, vec3.fromValues(60, 100, 200), 0, vec3.fromValues(0,0,0), vec3.fromValues(0,0,100), "frontWall-transform", "frontWall-Node");
+        let frontWall: TransformNode = this.createTransformNodes(vec3.fromValues(60, 100, 200), 0, vec3.fromValues(0,0,0), vec3.fromValues(0,0,100), "frontWall-transform", "frontWall-Node", this.darkStone, [1, 1, 1], [0.1, 0.1, 0.1], 100);
         front.addChild(frontWall);
         this.transformsHouse.push(frontWall);
         
-        let frontDoor: TransformNode = this.createTransformNodes(this.door, vec3.fromValues(40, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(0,-5, 200), "frontDoor-transform", "frontDoor-Node");
+        let frontDoor: TransformNode = this.createTransformNodes(vec3.fromValues(40, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(0,-5, 200), "frontDoor-transform", "frontDoor-Node", this.door, [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], 10);
         front.addChild(frontDoor);
         this.transformsHouse.push(frontDoor);
 
@@ -301,9 +305,9 @@ export class View {
     {
         let living: GroupNode = new GroupNode(this.scenegraph, "living");
 
-        let wall: TransformNode = this.createTransformNodes(this.darkStone, vec3.fromValues(200, 100, 200), 0, vec3.fromValues(0,0,0), vec3.fromValues(-130,0,100), "frontWall-transform", "frontWall-Node");
-        let wood: TransformNode = this.createTransformNodes(this.wood, vec3.fromValues(40, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-50,-5, 200), "frontWood-transform", "frontWood-Node");
-        let glass: TransformNode = this.createTransformNodes(this.glass, vec3.fromValues(100, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-122,-5, 200), "frontGlass-transform", "frontGlass-Node");
+        let wall: TransformNode = this.createTransformNodes(vec3.fromValues(200, 100, 200), 0, vec3.fromValues(0,0,0), vec3.fromValues(-130,0,100), "frontWall-transform", "frontWall-Node", this.darkStone, [1, 1, 1], [0.5, 0.5, 0.5], 100);
+        let wood: TransformNode = this.createTransformNodes(vec3.fromValues(40, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-50,-5, 200), "frontWood-transform", "frontWood-Node", this.wood, [1, 1, 1], [0.1, 0.1, 0.1], 100);
+        let glass: TransformNode = this.createTransformNodes(vec3.fromValues(100, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-122,-5, 200), "frontGlass-transform", "frontGlass-Node", this.glass, [0.1, 0.1, 0.1], [0.5, 0.5, 0.5], 100);
 
         living.addChild(wall);
         living.addChild(wood);
@@ -319,20 +323,20 @@ export class View {
     {
         let garage: GroupNode = new GroupNode(this.scenegraph, "garage");
         //Garage Wall
-        let wall: TransformNode = this.createTransformNodes(this.stone, vec3.fromValues(200, 100, 180), 0, vec3.fromValues(0,0,0), vec3.fromValues(130,0,88), "garageWall-transform", "garageWall-node");
+        let wall: TransformNode = this.createTransformNodes(vec3.fromValues(200, 100, 180), 0, vec3.fromValues(0,0,0), vec3.fromValues(130,0,88), "garageWall-transform", "garageWall-node", this.stone, [1, 1, 1], [0.1, 0.1, 0.1], 100);
         garage.addChild(wall);
         this.transformsHouse.push(wall);
 
         // Grills on Garage door
         for(let i: number = -2; i < 3; i += 1)
         {
-            let grill: TransformNode = this.createTransformNodes(this.grill, vec3.fromValues(5, 80, 2), 0, vec3.fromValues(0,0,1), vec3.fromValues(130 + (30*i), -5, 179), "garageGrill-transform", "garageGrill-node");
+            let grill: TransformNode = this.createTransformNodes(vec3.fromValues(5, 80, 2), 0, vec3.fromValues(0,0,1), vec3.fromValues(130 + (30*i), -5, 179), "garageGrill-transform", "garageGrill-node", this.grill, [0.4, 0.4, 0.4], [1, 1, 1], 10);
             garage.addChild(grill);
             this.transformsHouse.push(grill);
         }
 
         //Garage door
-        let door: TransformNode = this.createTransformNodes(this.wood, vec3.fromValues(160, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(130,-5,178), "garageDoor-transform", "garageDoor-node");
+        let door: TransformNode = this.createTransformNodes(vec3.fromValues(160, 80, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(130,-5,178), "garageDoor-transform", "garageDoor-node", this.wood, [1, 1, 1], [0.5, 0.5, 0.5], 100);
         garage.addChild(door);
         this.transformsHouse.push(door);
 
@@ -343,8 +347,8 @@ export class View {
     {
         let connectors: GroupNode = new GroupNode(this.scenegraph, "connectors");
         //connector HZ
-        let HZ: TransformNode = this.createTransformNodes(this.slate, vec3.fromValues(250, 20, 20), 0, vec3.fromValues(0,0,0), vec3.fromValues(-100,50, 210), "connectorHZ-transform", "connectorHZ-node");
-        let VT: TransformNode = this.createTransformNodes(this.slate, vec3.fromValues(120, 30, 220), 90, vec3.fromValues(0,0,1), vec3.fromValues(35,100, 110), "connectorVT-transform", "connectorVT-node");
+        let HZ: TransformNode = this.createTransformNodes(vec3.fromValues(250, 20, 20), 0, vec3.fromValues(0,0,0), vec3.fromValues(-100,50, 210), "connectorHZ-transform", "connectorHZ-node", this.slate, [1, 1, 1], [0.1, 0.1, 0.1], 100);
+        let VT: TransformNode = this.createTransformNodes(vec3.fromValues(120, 30, 220), 90, vec3.fromValues(0,0,1), vec3.fromValues(35,100, 110), "connectorVT-transform", "connectorVT-node", this.slate, [1, 1, 1], [0.1, 0.1, 0.1], 100);
         this.transformsHouse.push(HZ);
         this.transformsHouse.push(VT);
         connectors.addChild(HZ);
@@ -373,9 +377,9 @@ export class View {
     {
         let room1: GroupNode = new GroupNode(this.scenegraph, "room1");
 
-        let wall: TransformNode = this.createTransformNodes(this.wood, vec3.fromValues(237, 93, 200), 0, vec3.fromValues(0,0,0), vec3.fromValues(-97,97,100), "roomWall1-transform", "roomWall1-node");
-        let window: TransformNode = this.createTransformNodes(this.glass, vec3.fromValues(100, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-122,110, 200), "roomWindow1-transform", "roomWindow1-node");
-        let back: TransformNode = this.createTransformNodes(this.glass, vec3.fromValues(150, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-122,100, 0), "backWindow1-transform", "backWindow1-node");
+        let wall: TransformNode = this.createTransformNodes(vec3.fromValues(237, 93, 200), 0, vec3.fromValues(0,0,0), vec3.fromValues(-97,97,100), "roomWall1-transform", "roomWall1-node", this.wood, [1, 1, 1], [0.1, 0.1, 0.1], 100);
+        let window: TransformNode = this.createTransformNodes(vec3.fromValues(100, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-122,110, 200), "roomWindow1-transform", "roomWindow1-node", this.glass, [0.1, 0.1, 0.1], [1, 1, 1], 2);
+        let back: TransformNode = this.createTransformNodes(vec3.fromValues(150, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-122,100, 0), "backWindow1-transform", "backWindow1-node", this.glass, [0.1, 0.1, 0.1], [1, 1, 1], 2);
         this.transformsHouse.push(wall);
         this.transformsHouse.push(window);
         this.transformsHouse.push(back);
@@ -391,9 +395,9 @@ export class View {
     {
         let room2: GroupNode = new GroupNode(this.scenegraph, "room2");
 
-        let wall: TransformNode = this.createTransformNodes(this.wood, vec3.fromValues(100, 110, 160), 0, vec3.fromValues(0,0,0), vec3.fromValues(100,105,80), "roomWall2-transform", "roomWall2-node");
-        let window: TransformNode = this.createTransformNodes(this.glass, vec3.fromValues(50, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(100,97, 160), "roomWindow2-transform", "roomWindow2-node");
-        let back: TransformNode = this.createTransformNodes(this.glass, vec3.fromValues(50, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(100,97, 0), "backWindow2-transform", "backWindow2-node");
+        let wall: TransformNode = this.createTransformNodes(vec3.fromValues(100, 110, 160), 0, vec3.fromValues(0,0,0), vec3.fromValues(100,105,80), "roomWall2-transform", "roomWall2-node", this.wood, [1, 1, 1], [0.1, 0.1, 0.1], 100);
+        let window: TransformNode = this.createTransformNodes(vec3.fromValues(50, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(100,97, 160), "roomWindow2-transform", "roomWindow2-node", this.glass, [0.1, 0.1, 0.1], [1, 1, 1], 2);
+        let back: TransformNode = this.createTransformNodes(vec3.fromValues(50, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(100,97, 0), "backWindow2-transform", "backWindow2-node", this.glass, [0.1, 0.1, 0.1], [1, 1, 1], 2);
 
         this.transformsHouse.push(wall);
         this.transformsHouse.push(window);
@@ -412,7 +416,7 @@ export class View {
 
         let room1: GroupNode = this.createRoom1();
         let room2: GroupNode = this.createRoom2();
-        let aisleWindow: TransformNode = this.createTransformNodes(this.glass, vec3.fromValues(52, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-12,110, 200), "aisleWindow-transform", "aisleWindow-node");
+        let aisleWindow: TransformNode = this.createTransformNodes(vec3.fromValues(52, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-12,110, 200), "aisleWindow-transform", "aisleWindow-node", this.glass, [0.1, 0.1, 0.1], [1, 1, 1], 2);
         this.transformsHouse.push(aisleWindow);
         
         bedRooms.addChild(room1);
@@ -426,8 +430,8 @@ export class View {
     {
         let secondFloor: GroupNode = new GroupNode(this.scenegraph, "secondFloor");
 
-        let connectorHZ2: TransformNode = this.createTransformNodes(this.slate, vec3.fromValues(250, 20, 20), 0, vec3.fromValues(0,0,0), vec3.fromValues(-90,152, 210), "connectorHZ2-transform", "connectorHZ2-node");
-        let kitchenWindow: TransformNode = this.createTransformNodes(this.glass, vec3.fromValues(200, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-100, 0, 0), "kitchenWindow-transform", "kitchenWindow-node");
+        let connectorHZ2: TransformNode = this.createTransformNodes(vec3.fromValues(250, 20, 20), 0, vec3.fromValues(0,0,0), vec3.fromValues(-90,152, 210), "connectorHZ2-transform", "connectorHZ2-node", this.slate, [1, 1, 1], [0.1, 0.1, 0.1], 100);
+        let kitchenWindow: TransformNode = this.createTransformNodes(vec3.fromValues(200, 60, 2), 0, vec3.fromValues(0,0,0), vec3.fromValues(-100, 0, 0), "kitchenWindow-transform", "kitchenWindow-node", this.glass, [0.1, 0.1, 0.1], [1, 1, 1], 2);
         let bedRooms: GroupNode = this.bedRooms();
 
         this.transformsHouse.push(connectorHZ2);
@@ -444,8 +448,8 @@ export class View {
     {
         let roof: GroupNode = new GroupNode(this.scenegraph, "roof");
 
-        let left: TransformNode = this.createTransformNodes(this.roof, vec3.fromValues(250, 15, 220), 45, vec3.fromValues(0,0,1), vec3.fromValues(-118,250, 110), "roofLeft-transform", "roofLeft-node");
-        let right: TransformNode = this.createTransformNodes(this.roof, vec3.fromValues(250, 15, 220), -45, vec3.fromValues(0,0,1), vec3.fromValues(60, 250, 110), "roofRight-transform", "roofRgiht-node");
+        let left: TransformNode = this.createTransformNodes(vec3.fromValues(250, 15, 220), 45, vec3.fromValues(0,0,1), vec3.fromValues(-118,250, 110), "roofLeft-transform", "roofLeft-node", this.roof, [0.5, 0, 0], [0.9, 0.9, 0.9], 100);
+        let right: TransformNode = this.createTransformNodes(vec3.fromValues(250, 15, 220), -45, vec3.fromValues(0,0,1), vec3.fromValues(60, 250, 110), "roofRight-transform", "roofRgiht-node", this.roof, [0.5, 0, 0], [0.9, 0.9, 0.9], 100);
 
         this.transformsHouse.push(left);
         this.transformsHouse.push(right);
@@ -467,6 +471,8 @@ export class View {
         houseNode.addChild(firstFloor);
         houseNode.addChild(secondFloor);
         houseNode.addChild(roof);
+
+
 
         return houseNode;
     }
@@ -495,18 +501,20 @@ export class View {
             this.scenegraph.addPolygonMesh("cone", meshMap.get("cone"));
             this.scenegraph.addPolygonMesh("boxwire", meshMap.get("box").convertToWireframe());
 
-            //this.sceneNode.addChild(treeNode);               
-            //this.sceneNode.addChild(houseNode);              
+            this.sceneNode.addChild(treeNode);               
+            this.sceneNode.addChild(houseNode);              
                 
                  
             let Heli: GroupNode = new GroupNode(this.scenegraph, "heli");
             Heli = this.placeHeli(this.helicopter());
 
-            //this.sceneNode.addChild(Heli);
+            this.sceneNode.addChild(Heli);
 
-            //this.sceneNode.addChild(this.sceneBox());
-                  
-
+            this.sceneNode.addChild(this.sceneBox());
+            
+            let Transform = mat4.create();
+            mat4.translate(Transform, Transform, vec3.fromValues(50, 50, 0));
+            //this.allGroups.get("roof").setTransform(Transform);
 
             //spheres
             let spheres: GroupNode = new GroupNode(this.scenegraph, "shperes");
@@ -514,55 +522,13 @@ export class View {
             let sphere2: TransformNode = this.createSpheres([50, 50, 50], 0, [0,0,1], [80, 0, 0], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7], [0.7, 0.7, 0.7], 1,"sphere_2_trans", "sphere_2_node");
             spheres.addChild(sphere1);
             spheres.addChild(sphere2);
-            this.sceneNode.addChild(spheres);
-            { //Sphere 1
-                let transformNode: TransformNode = new TransformNode(this.scenegraph, "sphere_1_trans");
-                let transform: mat4 = mat4.create();
-                mat4.translate(transform, transform, [-60, 0, 0]);
-                mat4.scale(transform, transform, [100, 100, 100]);
-                transformNode.setTransform(transform);
-                //material
-                let child: SGNode = new LeafNode("sphere", this.scenegraph, "sphere_1_node");
-                let mat: Material = new Material();
-                let material: Material = new Material();
-                material.setAmbient([0.5, 0, 0]);
-                material.setDiffuse([0.7, 0, 0]);
-                material.setSpecular([0.7, 0, 0]);
-                material.setShininess(100);
-
-                child.setMaterial(mat);
-                transformNode.addChild(child);
-                spheres.addChild(transformNode);
-            }
-
-            { //Sphere 2
-                let transformNode: TransformNode = new TransformNode(this.scenegraph, "sphere_2_trans");
-                let transform: mat4 = mat4.create();
-                mat4.translate(transform, transform, [60, 0, 0]);
-                //    mat4.rotate(transform, transform, Math.PI / 4, [1, 0, 0]);
-                mat4.scale(transform, transform, [100, 100, 100]);
-
-                transformNode.setTransform(transform);
-                //material
-                let child: SGNode = new LeafNode("sphere!", this.scenegraph, "sphere_2_node");
-                let mat: Material = new Material();
-                let material: Material = new Material();
-                material.setAmbient([0.5, 0.5, 0.5]);
-                material.setDiffuse([0.7, 0.7, 0.7]);
-                material.setSpecular([0.7, 0.7, 0.7]);
-                material.setShininess(1);
-
-                child.setMaterial(mat);
-                transformNode.addChild(child);
-                spheres.addChild(transformNode);
-            }            
-            
-
+            //this.sceneNode.addChild(spheres);
 
             this.scenegraph.makeScenegraph(this.sceneNode);
 
             let shaderVarsToVertexAttribs: Map<string, string> = new Map<string, string>();
             shaderVarsToVertexAttribs.set("vPosition", "position");
+            shaderVarsToVertexAttribs.set("vNormal", "normal");
             let renderer: ScenegraphRenderer = new ScenegraphRenderer(this.gl, this.shaderLocations, shaderVarsToVertexAttribs);
 
             this.scenegraph.setRenderer(renderer);
@@ -937,8 +903,7 @@ export class View {
         //this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
-        
-    
+
         //send all the light colors
         for (let i = 0; i < this.lights.length; i++) {
             let ambientLocation: string = "light[" + i + "].ambient";
@@ -978,8 +943,8 @@ export class View {
         this.drawAnimations();
 
         if(this.cameraMode == CameraMode.Global){
-            //mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 600, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
-            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 0, 300), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 600, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+            //mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 0, 300), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
             this.cameraPos[0] = 0;
             this.cameraPos[1] = 0;
             this.cameraPos[2] = 0;

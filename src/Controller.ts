@@ -25,7 +25,7 @@ export class Controller implements Features {
 
         let numLights: number = this.view.lights.length;
         console.log("Lights: "+numLights);
-        this.view.initShaders(this.getVShader(), this.getFShader(numLights));
+        this.view.initShaders(this.getGouraudVShader(numLights), this.getGouraudFShader());
         
         this.view.draw();
     }
@@ -62,7 +62,7 @@ export class Controller implements Features {
         
         void main()
         {            
-            gl_FragColor = fColor * texture2D(image,fTexCoord.st);
+            gl_FragColor = fColor ;//* texture2D(image,fTexCoord.st);
         }
         
     `;
@@ -166,7 +166,7 @@ export class Controller implements Features {
         uniform mat4 projection;
         uniform mat4 modelview;
         uniform mat4 normalmatrix;
-        uniform mat4 texturematrix;
+        //uniform mat4 texturematrix;
         varying vec3 fNormal;
         varying vec4 fPosition;
         //varying vec4 fTexCoord;
@@ -255,13 +255,13 @@ export class Controller implements Features {
         
                 ambient = material.ambient * light[i].ambient;
                 diffuse = material.diffuse * light[i].diffuse * max(nDotL,0.0);
-                if (nDotL>0.0)
-                    specular = material.specular * light[i].specular * pow(rDotV,material.shininess);
-                else
+                //if (nDotL>0.0)
+                  //  specular = material.specular * light[i].specular * pow(rDotV,material.shininess);
+                //else
                     specular = vec3(0,0,0);
                 result = result + vec4(ambient+diffuse+specular,1.0);    
             }
-            result = result * texture2D(image,fTexCoord.st);
+            //result = result * texture2D(image,fTexCoord.st);
            // result = vec4(0.5*(fTexCoord.st+vec2(1,1)),0.0,1.0);
             gl_FragColor = result;
         }
