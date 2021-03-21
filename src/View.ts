@@ -81,7 +81,7 @@ export class View {
     private cameraMove: mat4;
 
     // Lights
-    private lights: Array<LightInfo>;
+    public lights: Array<LightInfo>;
 
     // colors
     private door: vec3 ;
@@ -159,7 +159,7 @@ export class View {
         l.setAmbient([0.8, 0.8, 0.8]);
         l.setDiffuse([0.5, 0.5, 0.5]);
         l.setSpecular([0.5, 0.5, 0.5]);
-        l.setPosition([0, 0, 100]);
+        l.setPosition([50, 0, 75]);
         this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
     
     }
@@ -184,9 +184,44 @@ export class View {
         this.shaderVarsToAttributes = new Map<string, string>();
         this.shaderVarsToAttributes.set("vPosition", "position");
         this.shaderVarsToAttributes.set("vNormal", "normal");
-        this.shaderVarsToAttributes.set("vTexCoord", "texcoord");
+        //this.shaderVarsToAttributes.set("vTexCoord", "texcoord");
 
     }
+
+
+    // Easy way to have constant tranformation nodes
+    public createSpheres(
+        scale = vec3.fromValues(0,0,0), 
+        rotate = 0, 
+        axis = vec3.fromValues(0,0,0), 
+        translate = vec3.fromValues(0,0,0),
+        ambient = vec3.fromValues(0,0,0),
+        diffuse = vec3.fromValues(0,0,0),
+        specular = vec3.fromValues(0,0,0),
+        shininess = 0,
+        transformName: string,
+        nodeName: string): TransformNode
+    {
+        let transformNode: TransformNode = new TransformNode(this.scenegraph, transformName);
+        let transform: mat4 = mat4.create();
+        mat4.translate(transform, transform, translate);
+        mat4.rotate(transform, transform, glMatrix.toRadian(rotate), axis);
+        mat4.scale(transform, transform, scale);
+        transformNode.setTransform(transform);
+        let child: SGNode = new LeafNode("sphere", this.scenegraph, nodeName);
+        let mat: Material = new Material();
+        mat.setAmbient(ambient);
+        mat.setDiffuse(diffuse);
+        mat.setSpecular(specular);
+        mat.setShininess(shininess);
+
+        child.setMaterial(mat);
+        transformNode.addChild(child);
+
+        return transformNode;
+    }
+
+
 
     // Easy way to have constant tranformation nodes
     public createTransformNodes(
@@ -207,6 +242,10 @@ export class View {
         let child: SGNode = new LeafNode("box", this.scenegraph, nodeName);
         let mat: Material = new Material();
         mat.setAmbient(rgb);
+        mat.setDiffuse([1, 0, 0]);
+        mat.setSpecular([1, 0, 0]);
+        mat.setShininess(5);
+
         //this.setLight([1, 1, 1], [0,0,0],[0,0,0], translate);
         child.setMaterial(mat);
         transformNode.addChild(child);
@@ -456,18 +495,69 @@ export class View {
             this.scenegraph.addPolygonMesh("cone", meshMap.get("cone"));
             this.scenegraph.addPolygonMesh("boxwire", meshMap.get("box").convertToWireframe());
 
-            this.sceneNode.addChild(treeNode);               
-            this.sceneNode.addChild(houseNode);              
+            //this.sceneNode.addChild(treeNode);               
+            //this.sceneNode.addChild(houseNode);              
                 
                  
             let Heli: GroupNode = new GroupNode(this.scenegraph, "heli");
             Heli = this.placeHeli(this.helicopter());
 
-            this.sceneNode.addChild(Heli);
+            //this.sceneNode.addChild(Heli);
 
-            this.sceneNode.addChild(this.sceneBox());
+            //this.sceneNode.addChild(this.sceneBox());
                   
+
+
+            //spheres
+            let spheres: GroupNode = new GroupNode(this.scenegraph, "shperes");
+            let sphere1: TransformNode = this.createSpheres([50, 50, 50], 0, [0,0,1], [20, 0, 0], [0.5, 0, 0], [0.7, 0, 0], [0.7, 0, 0], 100,"sphere_1_trans", "sphere_1_node");
+            let sphere2: TransformNode = this.createSpheres([50, 50, 50], 0, [0,0,1], [80, 0, 0], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7], [0.7, 0.7, 0.7], 1,"sphere_2_trans", "sphere_2_node");
+            spheres.addChild(sphere1);
+            spheres.addChild(sphere2);
+            this.sceneNode.addChild(spheres);
+            { //Sphere 1
+                let transformNode: TransformNode = new TransformNode(this.scenegraph, "sphere_1_trans");
+                let transform: mat4 = mat4.create();
+                mat4.translate(transform, transform, [-60, 0, 0]);
+                mat4.scale(transform, transform, [100, 100, 100]);
+                transformNode.setTransform(transform);
+                //material
+                let child: SGNode = new LeafNode("sphere", this.scenegraph, "sphere_1_node");
+                let mat: Material = new Material();
+                let material: Material = new Material();
+                material.setAmbient([0.5, 0, 0]);
+                material.setDiffuse([0.7, 0, 0]);
+                material.setSpecular([0.7, 0, 0]);
+                material.setShininess(100);
+
+                child.setMaterial(mat);
+                transformNode.addChild(child);
+                spheres.addChild(transformNode);
+            }
+
+            { //Sphere 2
+                let transformNode: TransformNode = new TransformNode(this.scenegraph, "sphere_2_trans");
+                let transform: mat4 = mat4.create();
+                mat4.translate(transform, transform, [60, 0, 0]);
+                //    mat4.rotate(transform, transform, Math.PI / 4, [1, 0, 0]);
+                mat4.scale(transform, transform, [100, 100, 100]);
+
+                transformNode.setTransform(transform);
+                //material
+                let child: SGNode = new LeafNode("sphere!", this.scenegraph, "sphere_2_node");
+                let mat: Material = new Material();
+                let material: Material = new Material();
+                material.setAmbient([0.5, 0.5, 0.5]);
+                material.setDiffuse([0.7, 0.7, 0.7]);
+                material.setSpecular([0.7, 0.7, 0.7]);
+                material.setShininess(1);
+
+                child.setMaterial(mat);
+                transformNode.addChild(child);
+                spheres.addChild(transformNode);
+            }            
             
+
 
             this.scenegraph.makeScenegraph(this.sceneNode);
 
@@ -477,7 +567,6 @@ export class View {
 
             this.scenegraph.setRenderer(renderer);
           }); 
-
 
     }
 
@@ -889,7 +978,8 @@ export class View {
         this.drawAnimations();
 
         if(this.cameraMode == CameraMode.Global){
-            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 600, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+            //mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 600, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 0, 300), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
             this.cameraPos[0] = 0;
             this.cameraPos[1] = 0;
             this.cameraPos[2] = 0;

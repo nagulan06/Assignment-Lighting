@@ -114,6 +114,19 @@ export class ScenegraphRenderer {
 
             // material
             this.gl.uniform3fv(this.shaderLocations.getUniformLocation("material.ambient"), material.getAmbient());
+            this.gl.uniform3fv(this.shaderLocations.getUniformLocation("material.diffuse"), material.getDiffuse());
+            this.gl.uniform3fv(this.shaderLocations.getUniformLocation("material.specular"), material.getSpecular());
+            this.gl.uniform1f(this.shaderLocations.getUniformLocation("material.shininess"), material.getShininess());
+
+
+            //the normal matrix = inverse transpose of modelview
+            let normalMatrix: mat4 = mat4.clone(transformation);
+            mat4.transpose(normalMatrix, normalMatrix);
+            mat4.invert(normalMatrix, normalMatrix);
+            loc = this.shaderLocations.getUniformLocation("normalmatrix");
+            this.gl.uniformMatrix4fv(loc, false, normalMatrix);
+
+           // console.log("normal: " + normalMatrix);
 
             this.meshRenderers.get(meshName).draw(this.shaderLocations);
         }
