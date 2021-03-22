@@ -116,7 +116,6 @@ export class View {
 
         // Lights
         this.lights = new Array;
-        this.initLights();
 
         // Bounding Boxes
         this.bvh = false;
@@ -151,26 +150,6 @@ export class View {
         l.setPosition([0, 0, 0]);
         this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
     }*/
-
-    private initLights(): void {
-        this.lights = [];
-        let l: Light = new Light();
-        l.setAmbient([0.5, 0.5, 0.5]);
-        l.setDiffuse([0.5, 0.5, 0.5]);
-        l.setSpecular([0.5, 0.5, 0.5]);
-        l.setPosition([300, 300, 100, 1]);
-        this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
-
-        l = new Light();
-        l.setAmbient([0.5, 0.5, 0.5]);
-        l.setDiffuse([0.5, 0.5, 0.5]);
-        l.setSpecular([0.5, 0.5, 0.5]);
-        l.setPosition([0, 0, 500, 1]);
-        l.setSpotDirection([0, 0, -1]);
-        l.setSpotAngle(glMatrix.toRadian(120));
-        l.isSpot = true;
-        //this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
-    }
 
     private setLight(ambient: vec3, diffuse: vec3, specular: vec3, position: vec3): void{
         let l: Light = new Light();
@@ -913,32 +892,37 @@ export class View {
         this.draw();
     }
 
+
+    public initLights(): void {
+        this.lights = [];
+        let l: Light = new Light();
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setPosition([300, 300, 100, 1]);
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
+
+        l = new Light();
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setPosition([0, 0, 500, 1]);
+        l.setSpotDirection([0, 0, -1]);
+        l.setSpotAngle(glMatrix.toRadian(120));
+        l.isSpot = true;
+
+        
+        //this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
+    }
+
     public draw(): void {
 
         //this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
 
-        //send all the light colors
-        for (let i = 0; i < this.lights.length; i++) {
-            let ambientLocation: string = "light[" + i + "].ambient";
-            let diffuseLocation: string = "light[" + i + "].diffuse";
-            let specularLocation: string = "light[" + i + "].specular";
-            let cutoffLocation: string = "light[" + i + "].cos_Cutoff";
-            let spotLocation: string = "light[" + i + "].isSpot";
-            this.gl.uniform3fv(this.shaderLocations.getUniformLocation(ambientLocation), this.lights[i].light.getAmbient());
-            this.gl.uniform3fv(this.shaderLocations.getUniformLocation(diffuseLocation), this.lights[i].light.getDiffuse());
-            this.gl.uniform3fv(this.shaderLocations.getUniformLocation(specularLocation), this.lights[i].light.getSpecular());
-            this.gl.uniform1f(this.shaderLocations.getUniformLocation(cutoffLocation), Math.cos(this.lights[i].light.getSpotCutoff()));
-            if(this.lights[i].light.isSpot)
-            {
-                this.gl.uniform1i(this.shaderLocations.getUniformLocation(spotLocation), 1);
-            }
-            else
-            {
-                this.gl.uniform1i(this.shaderLocations.getUniformLocation(spotLocation), 0);
-            }
-        }
+        
+        this.initLights();
 
         //send all the View-space lights to the GPU
         for (let i = 0; i < this.lights.length; i++) {
@@ -1001,6 +985,15 @@ export class View {
             
         }
         
+        // Descend through the scene graph, collect all the lights defined in the nodes, convert them to view coordinates
+        // and push them into this.lights
+        console.log("before lightPass: " + this.lights.length);
+        this.scenegraph.lightPass(this.modelview);
+        // Push all the lights from sceneGraph
+        for (let i = 0; i < this.scenegraph.lights.length; i++) {
+            //this.lights.push(this.scenegraph.lights[i]);
+        }
+        console.log("after lightPass: " + this.lights.length);
         
         //send all the World-space lights to the GPU
         for (let i = 0; i < this.lights.length; i++) {
@@ -1020,19 +1013,36 @@ export class View {
         
         this.gl.uniformMatrix4fv(this.shaderLocations.getUniformLocation("projection"), false, this.proj);
 
-        // Descend through the scene graph, collect all the lights defined in the nodes, convert them to view coordinates
-        // and push them into this.lights
-        this.scenegraph.lightPass(this.modelview, this.lights);
-
         // Send all the object space light to the GPU
         // The object space will be already converted into view space during the light pass. So, directly send them to GPU
-        for (let i = 0; i < this.lights.length; i++) {
+        /*for (let i = 0; i < this.lights.length; i++) {
 
             if (this.lights[i].coordinateSystem == LightCoordinateSystem.Object) {
                 let lightPositionLocation: string = "light[" + i + "].position";
                 let directionLocation: string = "light[" + i + "].spotDirection";
                 this.gl.uniform4fv(this.shaderLocations.getUniformLocation(lightPositionLocation), this.lights[i].light.getPosition());
                 this.gl.uniform4fv(this.shaderLocations.getUniformLocation(directionLocation), this.lights[i].light.getSpotDirection());
+            }
+        }*/
+
+        //send all the light colors
+        for (let i = 0; i < this.lights.length; i++) {
+            let ambientLocation: string = "light[" + i + "].ambient";
+            let diffuseLocation: string = "light[" + i + "].diffuse";
+            let specularLocation: string = "light[" + i + "].specular";
+            let cutoffLocation: string = "light[" + i + "].cos_Cutoff";
+            let spotLocation: string = "light[" + i + "].isSpot";
+            this.gl.uniform3fv(this.shaderLocations.getUniformLocation(ambientLocation), this.lights[i].light.getAmbient());
+            this.gl.uniform3fv(this.shaderLocations.getUniformLocation(diffuseLocation), this.lights[i].light.getDiffuse());
+            this.gl.uniform3fv(this.shaderLocations.getUniformLocation(specularLocation), this.lights[i].light.getSpecular());
+            this.gl.uniform1f(this.shaderLocations.getUniformLocation(cutoffLocation), Math.cos(this.lights[i].light.getSpotCutoff()));
+            if(this.lights[i].light.isSpot)
+            {
+                this.gl.uniform1i(this.shaderLocations.getUniformLocation(spotLocation), 1);
+            }
+            else
+            {
+                this.gl.uniform1i(this.shaderLocations.getUniformLocation(spotLocation), 0);
             }
         }
 

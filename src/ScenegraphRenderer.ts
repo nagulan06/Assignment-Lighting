@@ -151,11 +151,6 @@ export class ScenegraphRenderer {
             this.meshRenderers.get(meshName).draw(this.shaderLocations);
         }
     }
-
-    public addLights(transformation: mat4)
-    {
-
-    }
 }
 
 

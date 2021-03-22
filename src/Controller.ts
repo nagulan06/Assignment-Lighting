@@ -25,8 +25,9 @@ export class Controller implements Features {
 
         let numLights: number = this.view.lights.length;
         console.log("Lights: "+numLights);
-        this.view.initShaders(this.getPhongVShader(), this.getPhongFShader(numLights));
+        this.view.initShaders(this.getPhongVShader(), this.getPhongFShader(2));
         
+        this.view.initLights();
         this.view.draw();
     }
     

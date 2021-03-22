@@ -48,12 +48,18 @@ export class Scenegraph<VertexType extends IVertexData> {
      */
     protected renderer: ScenegraphRenderer;
 
+    // Lights array that stores all the lights in the sceneGraph in View coordinate system
+    public lights: Array<LightInfo>;
+
+
     public constructor() {
         this.root = null;
         this.meshes = new Map<string, Mesh.PolygonMesh<VertexType>>();
         this.nodes = new Map<string, SGNode>();
         this.textures = new Map<string, string>();
 
+        this.lights = new Array;
+        this.lights = [];
     }
 
     public dispose(): void {
@@ -98,9 +104,9 @@ export class Scenegraph<VertexType extends IVertexData> {
         }
     }
 
-    public lightPass(modelView: Stack<mat4>, lights: Array<LightInfo>): void {
+    public lightPass(modelView: Stack<mat4>): void {
         if ((this.root != null) && (this.renderer != null)) {
-            this.renderer.lightPass(this.root, modelView, lights);
+            this.renderer.lightPass(this.root, modelView, this.lights);
         }
     }
 

@@ -39,6 +39,7 @@ export class GroupNode extends SGNode {
 
         // Initialize an empty light array for every GroupNode
         this.lights = new Array;
+        this.lights = [];
     }
 
     /**

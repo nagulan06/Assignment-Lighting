@@ -43,6 +43,9 @@ export class LeafNode extends SGNode {
     public constructor(instanceOf: string, graph: Scenegraph<IVertexData>, name: string) {
         super(graph, name);
         this.meshName = instanceOf;
+
+        this.lights = new Array;
+        this.lights = [];
     }
 
 

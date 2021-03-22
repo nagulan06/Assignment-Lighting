@@ -45,6 +45,7 @@ export class TransformNode extends SGNode {
         this.child = null;
 
         this.lights = new Array;
+        this.lights = [];
     }
 
 
