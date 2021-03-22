@@ -104,9 +104,9 @@ export class Scenegraph<VertexType extends IVertexData> {
         }
     }
 
-    public lightPass(modelView: Stack<mat4>): void {
+    public lightPass(modelView: Stack<mat4>, lights: Array<LightInfo>): void {
         if ((this.root != null) && (this.renderer != null)) {
-            this.renderer.lightPass(this.root, modelView, this.lights);
+            this.renderer.lightPass(this.root, modelView, lights);
         }
     }
 

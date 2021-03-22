@@ -195,7 +195,7 @@ export class View {
         mat4.rotate(transform, transform, glMatrix.toRadian(rotate), axis);
         mat4.scale(transform, transform, scale);
         transformNode.setTransform(transform);
-        let child: SGNode = new LeafNode("sphere", this.scenegraph, nodeName);
+        let child: LeafNode = new LeafNode("sphere", this.scenegraph, nodeName);
         let mat: Material = new Material();
         mat.setAmbient(ambient);
         mat.setDiffuse(diffuse);
@@ -231,7 +231,7 @@ export class View {
         mat4.rotate(transform, transform, glMatrix.toRadian(rotate), axis);
         mat4.scale(transform, transform, scale);
         transformNode.setTransform(transform);
-        let child: SGNode = new LeafNode("box", this.scenegraph, nodeName);
+        let child: LeafNode = new LeafNode("box", this.scenegraph, nodeName);
         let mat: Material = new Material();
         mat.setAmbient(ambient);
         mat.setDiffuse(diffuse);
@@ -522,20 +522,10 @@ export class View {
 
     private helicopter(): GroupNode{
         let groupNode: GroupNode = new GroupNode(this.scenegraph, "heli");
-
-
-        let l: Light = new Light();
-        l.setAmbient([0.5, 0.5, 0.5]);
-        l.setDiffuse([0.5, 0.5, 0.5]);
-        l.setSpecular([0.5, 0.5, 0.5]);
-        l.setPosition([0, 0, 0, 1]);
-        //this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
-        groupNode.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
-
         
         // Cylinder Body
         let Body: TransformNode = new TransformNode(this.scenegraph, "cylinder-transform");
-        let child: SGNode = new LeafNode("cylinder", this.scenegraph, "bodynode");
+        let child: LeafNode = new LeafNode("cylinder", this.scenegraph, "bodynode");
         let mat: Material = new Material();
         let transform: mat4 = mat4.create();
         mat4.rotate(transform, transform, glMatrix.toRadian(90), vec3.fromValues(0, 0, 1));
@@ -635,6 +625,16 @@ export class View {
         this.transformsHeli.push(TopStem);
         //groupNode.addChild(this.getBVH(TopStem));
         groupNode.addChild(TopStem);
+
+
+        let l: Light = new Light();
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setPosition([1, 1, 1, 1]);
+        TopStem.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+        console.log("initial_pos: " + TopStem.lights[0].light.getPosition());
+
 
         // Top Prop box
         let TopPropeller: GroupNode = new GroupNode(this.scenegraph, "propeller");
@@ -788,7 +788,6 @@ export class View {
     // Predefined camera movement
     public cameraMovement(): mat4{
         this.cameraMove = mat4.create();
-        console.log("test");
 
         // FORWARD
         if(this.cameraPos[0] < 300 && this.cameraPos[1] >= 200 && this.cameraPos[2] >= 200 && this.cameraPos[2] < 800){
@@ -900,7 +899,7 @@ export class View {
         l.setDiffuse([0.5, 0.5, 0.5]);
         l.setSpecular([0.5, 0.5, 0.5]);
         l.setPosition([300, 300, 100, 1]);
-        this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
+        //this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
 
         l = new Light();
         l.setAmbient([0.5, 0.5, 0.5]);
@@ -987,13 +986,13 @@ export class View {
         
         // Descend through the scene graph, collect all the lights defined in the nodes, convert them to view coordinates
         // and push them into this.lights
-        console.log("before lightPass: " + this.lights.length);
-        this.scenegraph.lightPass(this.modelview);
+        //console.log("before lightPass: " + this.lights.length);
+        this.scenegraph.lightPass(this.modelview, this.lights);
         // Push all the lights from sceneGraph
         for (let i = 0; i < this.scenegraph.lights.length; i++) {
             //this.lights.push(this.scenegraph.lights[i]);
         }
-        console.log("after lightPass: " + this.lights.length);
+        //console.log("after lightPass: " + this.lights.length);
         
         //send all the World-space lights to the GPU
         for (let i = 0; i < this.lights.length; i++) {
@@ -1015,7 +1014,7 @@ export class View {
 
         // Send all the object space light to the GPU
         // The object space will be already converted into view space during the light pass. So, directly send them to GPU
-        /*for (let i = 0; i < this.lights.length; i++) {
+        for (let i = 0; i < this.lights.length; i++) {
 
             if (this.lights[i].coordinateSystem == LightCoordinateSystem.Object) {
                 let lightPositionLocation: string = "light[" + i + "].position";
@@ -1023,7 +1022,7 @@ export class View {
                 this.gl.uniform4fv(this.shaderLocations.getUniformLocation(lightPositionLocation), this.lights[i].light.getPosition());
                 this.gl.uniform4fv(this.shaderLocations.getUniformLocation(directionLocation), this.lights[i].light.getSpotDirection());
             }
-        }*/
+        }
 
         //send all the light colors
         for (let i = 0; i < this.lights.length; i++) {

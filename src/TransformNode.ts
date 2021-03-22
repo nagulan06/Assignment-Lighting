@@ -124,6 +124,11 @@ export class TransformNode extends SGNode {
         mat4.multiply(modelView.peek(), modelView.peek(), this.animationTransform);
         mat4.multiply(modelView.peek(), modelView.peek(), this.transform);
 
+        if(this.name == "topstem-transform")
+        {
+            //console.log("TFM: " + modelView.peek());
+        }
+
         if (this.child != null)
             this.child.draw(context, modelView);
         modelView.pop();
@@ -140,6 +145,11 @@ export class TransformNode extends SGNode {
                 let l: LightInfo = new LightInfo(this.lights[i].light, this.lights[i].coordinateSystem);
                 let result: vec4 = vec4.create();
                 // multiply the lights' position with modelView 
+
+                console.log("node: " + this.name);
+                console.log("pos_before" + i + ": " + this.lights[i].light.getPosition());
+                //console.log("tfm: " + modelView.peek());
+
                 vec4.transformMat4(result, this.lights[i].light.getPosition(), modelView.peek());
                 l.light.setPosition(result);
                 // multiply the lights' direction with modelView 
