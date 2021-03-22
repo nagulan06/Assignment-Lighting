@@ -25,7 +25,7 @@ export class Controller implements Features {
 
         let numLights: number = this.view.lights.length;
         console.log("Lights: "+numLights);
-        this.view.initShaders(this.getGouraudVShader(numLights), this.getGouraudFShader());
+        this.view.initShaders(this.getPhongVShader(), this.getPhongFShader(numLights));
         
         this.view.draw();
     }
@@ -209,6 +209,10 @@ export class Controller implements Features {
 
             vec3 specular;
             vec4 position;
+
+            int isSpot;
+            float cos_Cutoff;
+            vec4 spotDirection;
         };
         
         
@@ -255,10 +259,19 @@ export class Controller implements Features {
         
                 ambient = material.ambient * light[i].ambient;
                 diffuse = material.diffuse * light[i].diffuse * max(nDotL,0.0);
-                //if (nDotL>0.0)
-                  //  specular = material.specular * light[i].specular * pow(rDotV,material.shininess);
-                //else
+
+                float dotFromDirection = dot(lightVec, -(light[i].spotDirection.xyz));
+                if((light[i].isSpot == 0)|| (dotFromDirection >= light[i].cos_Cutoff)){
+                    if (nDotL>0.0)
+                        specular = material.specular * light[i].specular * pow(rDotV,material.shininess);
+                    //else
+                        //specular = vec3(0,0,0);
+                }
+                else
+                {
                     specular = vec3(0,0,0);
+                }
+
                 result = result + vec4(ambient+diffuse+specular,1.0);    
             }
             //result = result * texture2D(image,fTexCoord.st);

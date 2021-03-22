@@ -154,12 +154,21 @@ export class View {
 
     private initLights(): void {
         this.lights = [];
-        //ADDED
         let l: Light = new Light();
         l.setAmbient([0.5, 0.5, 0.5]);
         l.setDiffuse([0.5, 0.5, 0.5]);
         l.setSpecular([0.5, 0.5, 0.5]);
         l.setPosition([300, 300, 100, 1]);
+        //this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
+
+        l = new Light();
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setPosition([100, 0, 100, 1]);
+        l.setSpotDirection([0, 0, -1]);
+        l.setSpotAngle(glMatrix.toRadian(10));
+        l.isSpot = true;
         this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
     }
 
@@ -501,20 +510,16 @@ export class View {
             this.scenegraph.addPolygonMesh("cone", meshMap.get("cone"));
             this.scenegraph.addPolygonMesh("boxwire", meshMap.get("box").convertToWireframe());
 
-            this.sceneNode.addChild(treeNode);               
-            this.sceneNode.addChild(houseNode);              
+            //this.sceneNode.addChild(treeNode);               
+            //this.sceneNode.addChild(houseNode);              
                 
                  
             let Heli: GroupNode = new GroupNode(this.scenegraph, "heli");
             Heli = this.placeHeli(this.helicopter());
 
-            this.sceneNode.addChild(Heli);
+            //this.sceneNode.addChild(Heli);
 
-            this.sceneNode.addChild(this.sceneBox());
-            
-            let Transform = mat4.create();
-            mat4.translate(Transform, Transform, vec3.fromValues(50, 50, 0));
-            //this.allGroups.get("roof").setTransform(Transform);
+            //this.sceneNode.addChild(this.sceneBox());
 
             //spheres
             let spheres: GroupNode = new GroupNode(this.scenegraph, "shperes");
@@ -522,7 +527,7 @@ export class View {
             let sphere2: TransformNode = this.createSpheres([50, 50, 50], 0, [0,0,1], [80, 0, 0], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7], [0.7, 0.7, 0.7], 1,"sphere_2_trans", "sphere_2_node");
             spheres.addChild(sphere1);
             spheres.addChild(sphere2);
-            //this.sceneNode.addChild(spheres);
+            this.sceneNode.addChild(spheres);
 
             this.scenegraph.makeScenegraph(this.sceneNode);
 
@@ -538,6 +543,16 @@ export class View {
 
     private helicopter(): GroupNode{
         let groupNode: GroupNode = new GroupNode(this.scenegraph, "heli");
+
+
+        let l: Light = new Light();
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setPosition([0, 0, 0, 1]);
+        //this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+        groupNode.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+
         
         // Cylinder Body
         let Body: TransformNode = new TransformNode(this.scenegraph, "cylinder-transform");
@@ -909,9 +924,20 @@ export class View {
             let ambientLocation: string = "light[" + i + "].ambient";
             let diffuseLocation: string = "light[" + i + "].diffuse";
             let specularLocation: string = "light[" + i + "].specular";
+            let cutoffLocation: string = "light[" + i + "].cos_Cutoff";
+            let spotLocation: string = "light[" + i + "].isSpot";
             this.gl.uniform3fv(this.shaderLocations.getUniformLocation(ambientLocation), this.lights[i].light.getAmbient());
             this.gl.uniform3fv(this.shaderLocations.getUniformLocation(diffuseLocation), this.lights[i].light.getDiffuse());
             this.gl.uniform3fv(this.shaderLocations.getUniformLocation(specularLocation), this.lights[i].light.getSpecular());
+            this.gl.uniform1f(this.shaderLocations.getUniformLocation(cutoffLocation), Math.cos(this.lights[i].light.getSpotCutoff()));
+            if(this.lights[i].light.isSpot)
+            {
+                this.gl.uniform1i(this.shaderLocations.getUniformLocation(spotLocation), 1);
+            }
+            else
+            {
+                this.gl.uniform1i(this.shaderLocations.getUniformLocation(spotLocation), 0);
+            }
         }
 
         //send all the View-space lights to the GPU
@@ -919,7 +945,9 @@ export class View {
 
             if (this.lights[i].coordinateSystem == LightCoordinateSystem.View) {
                 let lightPositionLocation: string = "light[" + i + "].position";
+                let directionLocation: string = "light[" + i + "].spotDirection";
                 this.gl.uniform4fv(this.shaderLocations.getUniformLocation(lightPositionLocation), this.lights[i].light.getPosition());
+                this.gl.uniform4fv(this.shaderLocations.getUniformLocation(directionLocation), this.lights[i].light.getSpotDirection());
             }
         }
 
@@ -943,8 +971,8 @@ export class View {
         this.drawAnimations();
 
         if(this.cameraMode == CameraMode.Global){
-            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 600, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
-            //mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 0, 300), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+            //mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 600, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 0, 300), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
             this.cameraPos[0] = 0;
             this.cameraPos[1] = 0;
             this.cameraPos[2] = 0;
@@ -978,9 +1006,14 @@ export class View {
         for (let i = 0; i < this.lights.length; i++) {
             if (this.lights[i].coordinateSystem == LightCoordinateSystem.World) {
                 let lightPositionLocation: string = "light[" + i + "].position";
+                let directionLocation: string = "light[" + i + "].spotDirection";
                 let result: vec4 = vec4.create();
                 vec4.transformMat4(result, this.lights[i].light.getPosition(), this.modelview.peek());
                 this.gl.uniform4fv(this.shaderLocations.getUniformLocation(lightPositionLocation), result);
+
+                result = vec4.create();
+                vec4.transformMat4(result, this.lights[i].light.getSpotDirection(), this.modelview.peek());
+                this.gl.uniform4fv(this.shaderLocations.getUniformLocation(directionLocation), result);
             }
         }
 

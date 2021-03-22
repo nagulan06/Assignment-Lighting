@@ -4,9 +4,24 @@ import { Stack } from "%COMMON/Stack";
 import { ScenegraphRenderer } from "ScenegraphRenderer";
 import { Material } from "%COMMON/Material";
 import { IVertexData } from "%COMMON/IVertexData";
+import { Light } from "%COMMON/Light"
 /**
  * This class represents a basic node of a scene graph.
  */
+
+
+ enum LightCoordinateSystem { View, World, Object };
+
+ class LightInfo {
+    light: Light;
+    coordinateSystem: LightCoordinateSystem;
+
+    constructor(light: Light, coordinateSystem: LightCoordinateSystem) {
+        this.light = light;
+        this.coordinateSystem = coordinateSystem;
+    }
+}
+
 export abstract class SGNode {
     /**
       * The name given to this node
@@ -20,6 +35,10 @@ export abstract class SGNode {
      * A reference to the {@link sgraph.IScenegraph} object that this is part of
      */
     protected scenegraph: Scenegraph<IVertexData>;
+
+
+    public lights: Array<LightInfo>;
+
 
     constructor(graph: Scenegraph<IVertexData>, name: string) {
         this.parent = null;

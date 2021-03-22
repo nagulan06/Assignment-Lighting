@@ -21,6 +21,7 @@ export class GroupNode extends SGNode {
     public constructor(graph: Scenegraph<IVertexData>, name: string) {
         super(graph, name);
         this.children = [];
+        this.lights = new Array;
     }
 
     /**
