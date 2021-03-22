@@ -37,6 +37,7 @@ export abstract class SGNode {
     protected scenegraph: Scenegraph<IVertexData>;
 
 
+    // Since any node can have lights, it is defined in SGNode and all other nodes will inherit this array.
     public lights: Array<LightInfo>;
 
 
@@ -95,6 +96,8 @@ export abstract class SGNode {
     }
 
     public abstract draw(context: ScenegraphRenderer, modelView: Stack<mat4>): void;
+    public abstract lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>): void;
+
     public abstract clone(): SGNode;
     public setTransform(transform: mat4): void {
         throw new Error("Not supported");

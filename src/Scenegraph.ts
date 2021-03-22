@@ -4,12 +4,25 @@ import { Mesh } from "%COMMON/PolygonMesh";
 import { ScenegraphRenderer } from "ScenegraphRenderer";
 import { mat4, glMatrix, vec3 } from "gl-matrix";
 import { Stack } from "%COMMON/Stack";
+import { Light } from "%COMMON/Light"
 
 /**
  * A specific implementation of this scene graph. This implementation is still independent
  * of the rendering technology (i.e. WebGL)
  * @author Amit Shesh
  */
+
+enum LightCoordinateSystem { View, World, Object };
+
+ class LightInfo {
+    light: Light;
+    coordinateSystem: LightCoordinateSystem;
+
+    constructor(light: Light, coordinateSystem: LightCoordinateSystem) {
+        this.light = light;
+        this.coordinateSystem = coordinateSystem;
+    }
+}
 
 export class Scenegraph<VertexType extends IVertexData> {
     /**
@@ -35,12 +48,12 @@ export class Scenegraph<VertexType extends IVertexData> {
      */
     protected renderer: ScenegraphRenderer;
 
-
     public constructor() {
         this.root = null;
         this.meshes = new Map<string, Mesh.PolygonMesh<VertexType>>();
         this.nodes = new Map<string, SGNode>();
         this.textures = new Map<string, string>();
+
     }
 
     public dispose(): void {
@@ -82,6 +95,12 @@ export class Scenegraph<VertexType extends IVertexData> {
     public draw(modelView: Stack<mat4>): void {
         if ((this.root != null) && (this.renderer != null)) {
             this.renderer.draw(this.root, modelView);
+        }
+    }
+
+    public lightPass(modelView: Stack<mat4>, lights: Array<LightInfo>): void {
+        if ((this.root != null) && (this.renderer != null)) {
+            this.renderer.lightPass(this.root, modelView, lights);
         }
     }
 

@@ -1,9 +1,10 @@
 import { SGNode } from "./SGNode"
-import { mat4 } from "gl-matrix";
+import { mat4, vec3, vec4 } from "gl-matrix";
 import { Scenegraph } from "./Scenegraph";
 import { Stack } from "%COMMON/Stack";
 import { ScenegraphRenderer } from "./ScenegraphRenderer";
 import { IVertexData } from "%COMMON/IVertexData";
+import { Light } from "%COMMON/Light"
 
 /**
  * This node represents a transformation in the scene graph. It has only one child. The 
@@ -11,6 +12,19 @@ import { IVertexData } from "%COMMON/IVertexData";
  * coordinate system. This also stores an animation transform that can be tweaked at runtime
  * @author Amit Shesh
  */
+
+ enum LightCoordinateSystem { View, World, Object };
+
+ class LightInfo {
+    light: Light;
+    coordinateSystem: LightCoordinateSystem;
+
+    constructor(light: Light, coordinateSystem: LightCoordinateSystem) {
+        this.light = light;
+        this.coordinateSystem = coordinateSystem;
+    }
+}
+
 export class TransformNode extends SGNode {
     /**
          * Matrices storing the static and animation transformations separately, so that they can be
@@ -29,6 +43,8 @@ export class TransformNode extends SGNode {
         this.transform = mat4.create();
         this.animationTransform = mat4.create();
         this.child = null;
+
+        this.lights = new Array;
     }
 
 
@@ -110,6 +126,48 @@ export class TransformNode extends SGNode {
         if (this.child != null)
             this.child.draw(context, modelView);
         modelView.pop();
+    }
+
+    public lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>) {
+        modelView.push(mat4.clone(modelView.peek()));
+        mat4.multiply(modelView.peek(), modelView.peek(), this.animationTransform);
+        mat4.multiply(modelView.peek(), modelView.peek(), this.transform);
+
+        // Loop through all the lights in the transform nodes
+        for (let i = 0; i < this.lights.length; i++) {
+            if (this.lights[i].coordinateSystem == LightCoordinateSystem.Object) {
+                let l: LightInfo = new LightInfo(this.lights[i].light, this.lights[i].coordinateSystem);
+                let result: vec4 = vec4.create();
+                // multiply the lights' position with modelView 
+                vec4.transformMat4(result, this.lights[i].light.getPosition(), modelView.peek());
+                l.light.setPosition(result);
+                // multiply the lights' direction with modelView 
+                result = vec4.create();
+                vec4.transformMat4(result, this.lights[i].light.getSpotDirection(), modelView.peek());
+                l.light.setSpotDirection(result);
+
+                // Add those lights in view coordinates to the lights array                
+                lights.push(l);
+            }
+        }
+
+        if (this.child != null)
+            this.child.lightPass(context, modelView, lights);
+        modelView.pop();
+    }
+
+    private setLight(ambient: vec3, diffuse: vec3, specular: vec3, position: vec3): void{
+        let l: Light = new Light();
+        l.setAmbient(ambient);
+        l.setDiffuse(diffuse);
+        l.setSpecular(specular);
+        l.setPosition(position);
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+    }
+
+    public addLight(l: Light)
+    {
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
     }
 
 

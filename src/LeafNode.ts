@@ -3,14 +3,28 @@ import { Scenegraph } from "./Scenegraph";
 import { Material } from "%COMMON/Material";
 import { Stack } from "%COMMON/Stack";
 import { ScenegraphRenderer } from "./ScenegraphRenderer";
-import { mat4 } from "gl-matrix";
+import { mat4, vec3, vec4 } from "gl-matrix";
 import { IVertexData } from "%COMMON/IVertexData";
+import { Light } from "%COMMON/Light"
+
 
 /**
  * This node represents the leaf of a scene graph. It is the only type of node that has
  * actual geometry to render.
  * @author Amit Shesh
  */
+
+ enum LightCoordinateSystem { View, World, Object };
+
+ class LightInfo {
+     light: Light;
+     coordinateSystem: LightCoordinateSystem;
+
+     constructor(light: Light, coordinateSystem: LightCoordinateSystem) {
+         this.light = light;
+         this.coordinateSystem = coordinateSystem;
+     }
+}
 
 export class LeafNode extends SGNode {
 
@@ -78,5 +92,41 @@ export class LeafNode extends SGNode {
         }
     }
 
+    public lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>): void {
+        if (this.meshName.length > 0) {
+
+            // Loop through all the lights in the leaf node
+        for (let i = 0; i < this.lights.length; i++) {
+            if (this.lights[i].coordinateSystem == LightCoordinateSystem.Object) {
+                let l: LightInfo = new LightInfo(this.lights[i].light, this.lights[i].coordinateSystem);
+                let result: vec4 = vec4.create();
+                // multiply the lights' position with modelView 
+                vec4.transformMat4(result, this.lights[i].light.getPosition(), modelView.peek());
+                l.light.setPosition(result);
+                // multiply the lights' direction with modelView 
+                result = vec4.create();
+                vec4.transformMat4(result, this.lights[i].light.getSpotDirection(), modelView.peek());
+                l.light.setSpotDirection(result);
+
+                // Add those lights in view coordinates to the lights array                
+                lights.push(l);
+            }
+        }
+        }
+    }
+
+    private setLight(ambient: vec3, diffuse: vec3, specular: vec3, position: vec3): void{
+        let l: Light = new Light();
+        l.setAmbient(ambient);
+        l.setDiffuse(diffuse);
+        l.setSpecular(specular);
+        l.setPosition(position);
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+    }
+
+    public addLight(l: Light)
+    {
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+    }
 
 }

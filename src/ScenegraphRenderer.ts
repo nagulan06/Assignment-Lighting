@@ -7,11 +7,26 @@ import { SGNode } from "SGNode";
 import { Stack } from "%COMMON/Stack";
 import { mat4, vec4 } from "gl-matrix";
 import { Material } from "%COMMON/Material";
+import { Light } from "%COMMON/Light"
+
 
 /**
  * This is a scene graph renderer implementation that works specifically with WebGL.
  * @author Amit Shesh
  */
+
+ enum LightCoordinateSystem { View, World, Object };
+
+ class LightInfo {
+    light: Light;
+    coordinateSystem: LightCoordinateSystem;
+
+    constructor(light: Light, coordinateSystem: LightCoordinateSystem) {
+        this.light = light;
+        this.coordinateSystem = coordinateSystem;
+    }
+}
+
 export class ScenegraphRenderer {
     protected gl: WebGLRenderingContext;
     /**
@@ -33,12 +48,15 @@ export class ScenegraphRenderer {
      */
     protected meshRenderers: Map<String, RenderableMesh<IVertexData>>;
 
+    public lights: Array<LightInfo>;
+
 
     public constructor(gl: WebGLRenderingContext, shaderLocations: ShaderLocationsVault, shaderVarsToAttribs: Map<string, string>) {
         this.gl = gl;
         this.shaderVarsToVertexAttribs = shaderVarsToAttribs;
         this.meshRenderers = new Map<String, RenderableMesh<IVertexData>>();
         this.shaderLocations = shaderLocations;
+        this.lights = new Array;
     }
 
 
@@ -87,6 +105,10 @@ export class ScenegraphRenderer {
         root.draw(this, modelView);
     }
 
+    public lightPass(root: SGNode, modelView: Stack<mat4>, lights: Array<LightInfo>): void {
+        root.lightPass(this, modelView, lights);
+    }
+
     public dispose(): void {
         for (let mesh of this.meshRenderers.values()) {
             mesh.cleanup();
@@ -126,9 +148,14 @@ export class ScenegraphRenderer {
             loc = this.shaderLocations.getUniformLocation("normalmatrix");
             this.gl.uniformMatrix4fv(loc, false, normalMatrix);
 
-           // console.log("normal: " + normalMatrix);
-
             this.meshRenderers.get(meshName).draw(this.shaderLocations);
         }
     }
+
+    public addLights(transformation: mat4)
+    {
+
+    }
 }
+
+

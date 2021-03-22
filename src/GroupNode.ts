@@ -4,12 +4,27 @@ import { ScenegraphRenderer } from "./ScenegraphRenderer";
 import { Stack } from "%COMMON/Stack";
 import { mat4 } from "gl-matrix";
 import { IVertexData } from "%COMMON/IVertexData";
+import { vec4, vec3} from "gl-matrix";
+import { Light } from "%COMMON/Light"
 
 /**
  * This class represents a group node in the scenegraph. A group node is simply a logical grouping
  * of other nodes. It can have an arbitrary number of children. Its children can be nodes of any type
  * @author Amit Shesh
  */
+
+ enum LightCoordinateSystem { View, World, Object };
+
+ class LightInfo {
+    light: Light;
+    coordinateSystem: LightCoordinateSystem;
+
+    constructor(light: Light, coordinateSystem: LightCoordinateSystem) {
+        this.light = light;
+        this.coordinateSystem = coordinateSystem;
+    }
+}
+
 
 export class GroupNode extends SGNode {
 
@@ -21,6 +36,8 @@ export class GroupNode extends SGNode {
     public constructor(graph: Scenegraph<IVertexData>, name: string) {
         super(graph, name);
         this.children = [];
+
+        // Initialize an empty light array for every GroupNode
         this.lights = new Array;
     }
 
@@ -64,6 +81,42 @@ export class GroupNode extends SGNode {
         this.children.forEach(child => child.draw(context, modelView));
     }
 
+    public lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>): void {
+    
+        // Loop through all the lights in the group node
+        for (let i = 0; i < this.lights.length; i++) {
+            if (this.lights[i].coordinateSystem == LightCoordinateSystem.Object) {
+                let l: LightInfo = new LightInfo(this.lights[i].light, this.lights[i].coordinateSystem);
+                let result: vec4 = vec4.create();
+                // multiply the lights' position with modelView 
+                vec4.transformMat4(result, this.lights[i].light.getPosition(), modelView.peek());
+                l.light.setPosition(result);
+                // multiply the lights' direction with modelView 
+                result = vec4.create();
+                vec4.transformMat4(result, this.lights[i].light.getSpotDirection(), modelView.peek());
+                l.light.setSpotDirection(result);
+
+                // Add those lights in view coordinates to the lights array                
+                lights.push(l);
+            }
+        }
+
+        this.children.forEach(child => child.lightPass(context, modelView, lights));
+    }
+
+    private setLight(ambient: vec3, diffuse: vec3, specular: vec3, position: vec3): void{
+        let l: Light = new Light();
+        l.setAmbient(ambient);
+        l.setDiffuse(diffuse);
+        l.setSpecular(specular);
+        l.setPosition(position);
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+    }
+
+    public addLight(l: Light)
+    {
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
+    }
     /**
      * Makes a deep copy of the subtree rooted at this node
      * @return a deep copy of the subtree rooted at this node
