@@ -142,10 +142,7 @@ export class TransformNode extends SGNode {
         // Loop through all the lights in the transform nodes
         if(lightMap.has(this.name))
         {
-            console.log("node: " + this.name);
-
             for (let i = 0; i < lightMap.get(this.name).length; i++) {
-                console.log("pos_before" + i + ": " + (lightMap.get(this.name))[i].light.getPosition());
                 let l: LightInfo = new LightInfo(lightMap.get(this.name)[i].light.clone(), lightMap.get(this.name)[i].coordinateSystem);
                 //console.log("l_before"+ i + ": " + l.light.getPosition());
                 let pos: vec4 = vec4.create();
@@ -153,9 +150,7 @@ export class TransformNode extends SGNode {
                 vec4.transformMat4(pos, l.light.getPosition(), modelView.peek());
                 //console.log("result: " + pos);
                 l.light.setPosition([pos[0], pos[1], pos[2]]);
-                console.log("pos_after: " + (lightMap.get(this.name))[i].light.getPosition());
-                console.log("l_after: " + l.light.getPosition());
-
+    
                 //multiply the lights' direction with modelView 
                 vec4.transformMat4(dir, l.light.getSpotDirection(), modelView.peek());
                 l.light.setSpotDirection([dir[0], dir[1], dir[2]]);
