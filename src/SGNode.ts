@@ -96,7 +96,7 @@ export abstract class SGNode {
     }
 
     public abstract draw(context: ScenegraphRenderer, modelView: Stack<mat4>): void;
-    public abstract lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>): void;
+    public abstract lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>, lightMap: Map<string, Array<LightInfo>>): void;
 
     public abstract clone(): SGNode;
     public setTransform(transform: mat4): void {

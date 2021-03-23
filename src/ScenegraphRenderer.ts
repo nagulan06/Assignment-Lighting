@@ -105,8 +105,8 @@ export class ScenegraphRenderer {
         root.draw(this, modelView);
     }
 
-    public lightPass(root: SGNode, modelView: Stack<mat4>, lights: Array<LightInfo>): void {
-        root.lightPass(this, modelView, lights);
+    public lightPass(root: SGNode, modelView: Stack<mat4>, lights: Array<LightInfo>, lightMap: Map<string, Array<LightInfo>>): void {
+        root.lightPass(this, modelView, lights, lightMap);
     }
 
     public dispose(): void {

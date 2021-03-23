@@ -95,26 +95,30 @@ export class LeafNode extends SGNode {
         }
     }
 
-    public lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>): void {
+    public lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>, lightMap: Map<string, Array<LightInfo>>): void {
         if (this.meshName.length > 0) {
 
             // Loop through all the lights in the leaf node
-        for (let i = 0; i < this.lights.length; i++) {
-            if (this.lights[i].coordinateSystem == LightCoordinateSystem.Object) {
-                let l: LightInfo = new LightInfo(this.lights[i].light, this.lights[i].coordinateSystem);
-                let result: vec4 = vec4.create();
-                // multiply the lights' position with modelView 
-                vec4.transformMat4(result, this.lights[i].light.getPosition(), modelView.peek());
-                l.light.setPosition(result);
-                // multiply the lights' direction with modelView 
-                result = vec4.create();
-                vec4.transformMat4(result, this.lights[i].light.getSpotDirection(), modelView.peek());
-                l.light.setSpotDirection(result);
+            if(lightMap.has(this.name))
+            {
+                console.log("node: " + this.name);
 
-                // Add those lights in view coordinates to the lights array                
-                lights.push(l);
+                for (let i = 0; i < lightMap.get(this.name).length; i++) {
+                    console.log("pos_before" + i + ": " + (lightMap.get(this.name))[i].light.getPosition());
+    
+                    let l: LightInfo = new LightInfo(lightMap.get(this.name)[i].light, lightMap.get(this.name)[i].coordinateSystem);
+                    let result: vec4 = vec4.create();
+                    vec4.transformMat4(result, lightMap.get(this.name)[i].light.getPosition(), modelView.peek());
+                    l.light.setPosition(result);
+                    // multiply the lights' direction with modelView 
+                    result = vec4.create();
+                    vec4.transformMat4(result, lightMap.get(this.name)[i].light.getSpotDirection(), modelView.peek());
+                    l.light.setSpotDirection(result);
+    
+                    // Add those lights in view coordinates to the lights array                
+                    lights.push(l);
+                }
             }
-        }
         }
     }
 

@@ -22,7 +22,7 @@ export class Controller implements Features {
 
     public go(): void {
         this.view.initScenegraph();
-
+        
         let numLights: number = this.view.lights.length;
         this.view.initShaders(this.getPhongVShader(), this.getPhongFShader(2));
         

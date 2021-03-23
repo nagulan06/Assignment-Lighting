@@ -94,6 +94,8 @@ export class View {
     private roof: vec3;
     private leaves: vec3;
 
+    public node: TransformNode;
+
     constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
         this.movement = 0;
@@ -632,9 +634,8 @@ export class View {
         l.setDiffuse([0.5, 0.5, 0.5]);
         l.setSpecular([0.5, 0.5, 0.5]);
         l.setPosition([1, 1, 1, 1]);
-        TopStem.lights.push(new LightInfo(l, LightCoordinateSystem.Object));
-        console.log("initial_pos: " + TopStem.lights[0].light.getPosition());
-
+        //TopStem.lights
+        this.scenegraph.addLight("topstem-transform", l);
 
         // Top Prop box
         let TopPropeller: GroupNode = new GroupNode(this.scenegraph, "propeller");
@@ -893,13 +894,14 @@ export class View {
 
 
     public initLights(): void {
+
         this.lights = [];
         let l: Light = new Light();
         l.setAmbient([0.5, 0.5, 0.5]);
         l.setDiffuse([0.5, 0.5, 0.5]);
         l.setSpecular([0.5, 0.5, 0.5]);
         l.setPosition([300, 300, 100, 1]);
-        //this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
 
         l = new Light();
         l.setAmbient([0.5, 0.5, 0.5]);
@@ -988,10 +990,7 @@ export class View {
         // and push them into this.lights
         //console.log("before lightPass: " + this.lights.length);
         this.scenegraph.lightPass(this.modelview, this.lights);
-        // Push all the lights from sceneGraph
-        for (let i = 0; i < this.scenegraph.lights.length; i++) {
-            //this.lights.push(this.scenegraph.lights[i]);
-        }
+
         //console.log("after lightPass: " + this.lights.length);
         
         //send all the World-space lights to the GPU

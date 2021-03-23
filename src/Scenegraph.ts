@@ -49,7 +49,7 @@ export class Scenegraph<VertexType extends IVertexData> {
     protected renderer: ScenegraphRenderer;
 
     // Lights array that stores all the lights in the sceneGraph in View coordinate system
-    public lights: Array<LightInfo>;
+    public lightMap: Map<string, Array<LightInfo>>;
 
 
     public constructor() {
@@ -58,8 +58,7 @@ export class Scenegraph<VertexType extends IVertexData> {
         this.nodes = new Map<string, SGNode>();
         this.textures = new Map<string, string>();
 
-        this.lights = new Array;
-        this.lights = [];
+        this.lightMap = new Map<string, Array<LightInfo>>();
     }
 
     public dispose(): void {
@@ -106,7 +105,7 @@ export class Scenegraph<VertexType extends IVertexData> {
 
     public lightPass(modelView: Stack<mat4>, lights: Array<LightInfo>): void {
         if ((this.root != null) && (this.renderer != null)) {
-            this.renderer.lightPass(this.root, modelView, lights);
+            this.renderer.lightPass(this.root, modelView, lights, this.lightMap);
         }
     }
 
@@ -136,5 +135,21 @@ export class Scenegraph<VertexType extends IVertexData> {
 
     public addTexture(textureName: string, path: string): void {
         this.textures.set(textureName, path);
+    }
+
+    public addLight(name: string, l: Light)
+    {
+        // If mapping already exists
+        if(this.lightMap.has(name))
+        {
+            this.lightMap.get(name).push(new LightInfo(l, LightCoordinateSystem.Object));
+        }
+        // New entry
+        else
+        {
+            let temp: Array<LightInfo> = new Array;
+            temp.push(new LightInfo(l, LightCoordinateSystem.Object))
+            this.lightMap.set(name, temp);
+        }
     }
 }

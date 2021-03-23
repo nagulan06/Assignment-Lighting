@@ -134,36 +134,40 @@ export class TransformNode extends SGNode {
         modelView.pop();
     }
 
-    public lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>) {
+    public lightPass(context: ScenegraphRenderer, modelView: Stack<mat4>, lights: Array<LightInfo>, lightMap: Map<string, Array<LightInfo>>) {
         modelView.push(mat4.clone(modelView.peek()));
         mat4.multiply(modelView.peek(), modelView.peek(), this.animationTransform);
         mat4.multiply(modelView.peek(), modelView.peek(), this.transform);
 
         // Loop through all the lights in the transform nodes
-        for (let i = 0; i < this.lights.length; i++) {
-            if (this.lights[i].coordinateSystem == LightCoordinateSystem.Object) {
-                let l: LightInfo = new LightInfo(this.lights[i].light, this.lights[i].coordinateSystem);
-                let result: vec4 = vec4.create();
-                // multiply the lights' position with modelView 
+        if(lightMap.has(this.name))
+        {
+            console.log("node: " + this.name);
 
-                console.log("node: " + this.name);
-                console.log("pos_before" + i + ": " + this.lights[i].light.getPosition());
-                //console.log("tfm: " + modelView.peek());
+            for (let i = 0; i < lightMap.get(this.name).length; i++) {
+                console.log("pos_before" + i + ": " + (lightMap.get(this.name))[i].light.getPosition());
+                let l: LightInfo = new LightInfo(lightMap.get(this.name)[i].light.clone(), lightMap.get(this.name)[i].coordinateSystem);
+                //console.log("l_before"+ i + ": " + l.light.getPosition());
+                let pos: vec4 = vec4.create();
+                let dir: vec4 = vec4.create();
+                vec4.transformMat4(pos, l.light.getPosition(), modelView.peek());
+                //console.log("result: " + pos);
+                l.light.setPosition([pos[0], pos[1], pos[2]]);
+                console.log("pos_after: " + (lightMap.get(this.name))[i].light.getPosition());
+                console.log("l_after: " + l.light.getPosition());
 
-                vec4.transformMat4(result, this.lights[i].light.getPosition(), modelView.peek());
-                l.light.setPosition(result);
-                // multiply the lights' direction with modelView 
-                result = vec4.create();
-                vec4.transformMat4(result, this.lights[i].light.getSpotDirection(), modelView.peek());
-                l.light.setSpotDirection(result);
+                //multiply the lights' direction with modelView 
+                vec4.transformMat4(dir, l.light.getSpotDirection(), modelView.peek());
+                l.light.setSpotDirection([dir[0], dir[1], dir[2]]);
+                //l.light.setSpotDirection(result);
 
-                // Add those lights in view coordinates to the lights array                
+                // Add those lights in view coordinates to the lights array
                 lights.push(l);
             }
         }
 
         if (this.child != null)
-            this.child.lightPass(context, modelView, lights);
+            this.child.lightPass(context, modelView, lights, lightMap);
         modelView.pop();
     }
 
