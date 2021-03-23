@@ -438,8 +438,8 @@ export class View {
     {
         let roof: GroupNode = new GroupNode(this.scenegraph, "roof");
 
-        let left: TransformNode = this.createTransformNodes(vec3.fromValues(250, 15, 220), 45, vec3.fromValues(0,0,1), vec3.fromValues(-118,250, 110), "roofLeft-transform", "roofLeft-node", this.roof, [0.5, 0, 0], [0.9, 0.9, 0.9], 100);
-        let right: TransformNode = this.createTransformNodes(vec3.fromValues(250, 15, 220), -45, vec3.fromValues(0,0,1), vec3.fromValues(60, 250, 110), "roofRight-transform", "roofRgiht-node", this.roof, [0.5, 0, 0], [0.9, 0.9, 0.9], 100);
+        let left: TransformNode = this.createTransformNodes(vec3.fromValues(250, 15, 220), 45, vec3.fromValues(0,0,1), vec3.fromValues(-118,250, 110), "roofLeft-transform", "roofLeft-node", this.roof, [0.8, 0, 0], [0.9, 0.9, 0.9], 100);
+        let right: TransformNode = this.createTransformNodes(vec3.fromValues(250, 15, 220), -45, vec3.fromValues(0,0,1), vec3.fromValues(60, 250, 110), "roofRight-transform", "roofRgiht-node", this.roof, [0.8, 0, 0], [0.9, 0.9, 0.9], 100);
 
         this.transformsHouse.push(left);
         this.transformsHouse.push(right);
@@ -629,10 +629,11 @@ export class View {
         groupNode.addChild(TopStem);
 
 
+        // Add a light to the top stem of the helicopter
         let l: Light = new Light();
-        l.setAmbient([0.5, 0.5, 0.5]);
-        l.setDiffuse([0.5, 0.5, 0.5]);
-        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setAmbient([0.0, 0.2, 0.5]);
+        l.setDiffuse([0.0, 0.2, 0.5]);
+        l.setSpecular([0.0, 0.2, 0.5]);
         l.setPosition([1, 1, 1, 1]);
         //TopStem.lights
         this.scenegraph.addLight("topstem-transform", l);
@@ -895,25 +896,22 @@ export class View {
 
     public initLights(): void {
 
+        // Global static light in the scene
         this.lights = [];
         let l: Light = new Light();
-        l.setAmbient([0.5, 0.5, 0.5]);
-        l.setDiffuse([0.5, 0.5, 0.5]);
-        l.setSpecular([0.5, 0.5, 0.5]);
-        l.setPosition([300, 300, 100, 1]);
+        l.setAmbient([0.7, 0.1, 0.1]);
+        l.setDiffuse([0.7, 0.1, 0.1]);
+        l.setSpecular([0.7, 0.1, 0.1]);
+        l.setPosition([300, 300, 0, 1]);
         this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
 
         l = new Light();
-        l.setAmbient([0.5, 0.5, 0.5]);
-        l.setDiffuse([0.5, 0.5, 0.5]);
-        l.setSpecular([0.5, 0.5, 0.5]);
-        l.setPosition([0, 0, 500, 1]);
-        l.setSpotDirection([0, 0, -1]);
-        l.setSpotAngle(glMatrix.toRadian(120));
-        l.isSpot = true;
+        l.setAmbient([0.0, 0.4, 0.1]);
+        l.setDiffuse([0.0, 0.4, 0.1]);
+        l.setSpecular([0.0, 0.4, 0.1]);
+        l.setPosition([-350, 0, 0, 1]);
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
 
-        
-        //this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
     }
 
     public draw(): void {
