@@ -4,7 +4,7 @@ import { Stack } from "%COMMON/Stack";
 import { ScenegraphRenderer } from "ScenegraphRenderer";
 import { Material } from "%COMMON/Material";
 import { IVertexData } from "%COMMON/IVertexData";
-import { Light } from "%COMMON/Light"
+import { Light } from "./Light"
 /**
  * This class represents a basic node of a scene graph.
  */

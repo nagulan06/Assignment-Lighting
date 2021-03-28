@@ -5,7 +5,7 @@ import { Stack } from "%COMMON/Stack";
 import { ScenegraphRenderer } from "./ScenegraphRenderer";
 import { mat4, vec3, vec4 } from "gl-matrix";
 import { IVertexData } from "%COMMON/IVertexData";
-import { Light } from "%COMMON/Light"
+import { Light } from "./Light"
 
 
 /**

@@ -24,9 +24,9 @@ export class Controller implements Features {
         this.view.initScenegraph();
         
         let numLights: number = this.view.lights.length;
-        this.view.initShaders(this.getPhongVShader(), this.getPhongFShader(3));
+        this.view.initShaders(this.getPhongVShader(), this.getPhongFShader(4));
         
-        this.view.initLights();
+        //this.view.initLights_1();
         this.view.draw();
     }
     
@@ -44,6 +44,9 @@ export class Controller implements Features {
                 break;
             case "KeyB":
                 this.view.callBVH();
+                break;
+            case "KeyS":
+                this.view.spot();
                 break;
         }
     }
@@ -261,18 +264,18 @@ export class Controller implements Features {
                 diffuse = material.diffuse * light[i].diffuse * max(nDotL,0.0);
 
                 float dotFromDirection = dot(lightVec, -(light[i].spotDirection.xyz));
-                //if((light[i].isSpot == 0)|| (dotFromDirection >= light[i].cos_Cutoff)){
                     if (nDotL>0.0)
                         specular = material.specular * light[i].specular * pow(rDotV,material.shininess);
                     else
                         specular = vec3(0,0,0);
-                /*}
+
+                if((light[i].isSpot == 0)|| (dotFromDirection >= light[i].cos_Cutoff)){
+                    result = result + vec4(ambient+diffuse+specular,1.0);    
+                }
                 else
                 {
-                    specular = vec3(0,0,0);
-                }*/
-
-                result = result + vec4(ambient+diffuse+specular,1.0);    
+                    result = vec4(0, 0, 0, 1);
+                }
             }
             //result = result * texture2D(image,fTexCoord.st);
            // result = vec4(0.5*(fTexCoord.st+vec2(1,1)),0.0,1.0);

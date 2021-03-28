@@ -5,7 +5,7 @@ import { Stack } from "%COMMON/Stack";
 import { mat4 } from "gl-matrix";
 import { IVertexData } from "%COMMON/IVertexData";
 import { vec4, vec3} from "gl-matrix";
-import { Light } from "%COMMON/Light"
+import { Light } from "./Light"
 
 /**
  * This class represents a group node in the scenegraph. A group node is simply a logical grouping

@@ -4,7 +4,7 @@ import { Scenegraph } from "./Scenegraph";
 import { Stack } from "%COMMON/Stack";
 import { ScenegraphRenderer } from "./ScenegraphRenderer";
 import { IVertexData } from "%COMMON/IVertexData";
-import { Light } from "%COMMON/Light"
+import { Light } from "./Light"
 
 /**
  * This node represents a transformation in the scene graph. It has only one child. The 

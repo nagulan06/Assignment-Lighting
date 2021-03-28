@@ -2,7 +2,7 @@ import { vec4, mat4, vec3, glMatrix } from "gl-matrix";
 import * as WebGLUtils from "%COMMON/WebGLUtils";
 import { Features } from "./Controller";
 import { Stack } from "%COMMON/Stack"
-import { Light } from "%COMMON/Light"
+import { Light } from "./Light"
 import { Scenegraph } from "./Scenegraph";
 import { VertexPNT, VertexPNTProducer } from "./VertexPNT";
 import { ShaderLocationsVault } from "%COMMON/ShaderLocationsVault";
@@ -82,6 +82,7 @@ export class View {
 
     // Lights
     public lights: Array<LightInfo>;
+    public isSpot: boolean;
 
     // colors
     private door: vec3 ;
@@ -104,6 +105,8 @@ export class View {
         this.scenegraph = null;
         //set the clear color
         this.gl.clearColor(0.0, 0.0, 0.0, 1);
+
+        this.isSpot = false;
         
         // Setup the camera
         this.cameraMode = CameraMode.Global;
@@ -894,7 +897,7 @@ export class View {
     }
 
 
-    public initLights(): void {
+    public initLights_1(): void {
 
         // Global static light in the scene
         this.lights = [];
@@ -914,6 +917,22 @@ export class View {
 
     }
 
+    public initLights_2(): void {
+
+        this.lights = [];
+        let l: Light = new Light();
+        l = new Light();
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setPosition([0, 0, 1000, 1]);
+        l.setSpotDirection([0, 0, -1])
+        l.setSpotAngle(glMatrix.toRadian(5));
+        l.isSpot = true;
+        this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
+
+    }
+
     public draw(): void {
 
         //this.gl.clearColor(0, 0, 0, 1);
@@ -921,7 +940,14 @@ export class View {
         this.gl.enable(this.gl.DEPTH_TEST);
 
         
-        this.initLights();
+        if(this.isSpot)
+        {
+            this.initLights_2();
+        }
+        else
+        {
+            this.initLights_1();
+        }
 
         //send all the View-space lights to the GPU
         for (let i = 0; i < this.lights.length; i++) {
@@ -987,9 +1013,10 @@ export class View {
         // Descend through the scene graph, collect all the lights defined in the nodes, convert them to view coordinates
         // and push them into this.lights
         //console.log("before lightPass: " + this.lights.length);
-        this.scenegraph.lightPass(this.modelview, this.lights);
-
-        //console.log("after lightPass: " + this.lights.length);
+        if(this.isSpot == false)
+        {
+            this.scenegraph.lightPass(this.modelview, this.lights);
+        }
         
         //send all the World-space lights to the GPU
         for (let i = 0; i < this.lights.length; i++) {
@@ -1080,6 +1107,11 @@ export class View {
 
     public getNumberOfLights(): number {
         return this.lights.length;
+    }
+
+    public spot(): void
+    {
+        this.isSpot = !this.isSpot;
     }
 
 }
