@@ -538,6 +538,7 @@ export class View {
         Body.setTransform(transform);
         this.transformsHeli.push(Body);
         mat.setAmbient(vec3.fromValues(1, 0, 0));
+        mat.setDiffuse(vec3.fromValues(0.5, 0.5, 0.5));
         child.setMaterial(mat);
         Body.addChild(child);
         //groupNode.addChild(this.getBVH(Body));
@@ -552,6 +553,7 @@ export class View {
         child = new LeafNode("sphere", this.scenegraph, "spherenode");
         mat = new Material();
         mat.setAmbient(vec3.fromValues(1, 1, 0));
+        mat.setDiffuse(vec3.fromValues(0.5, 0.5, 0.5));
         child.setMaterial(mat);
         Front.addChild(child);
         this.transformsHeli.push(Front);
@@ -570,6 +572,7 @@ export class View {
         child = new LeafNode("cone", this.scenegraph, "conenode");
         mat = new Material();
         mat.setAmbient(vec3.fromValues(1, 1, 0));
+        mat.setDiffuse(vec3.fromValues(0.5, 0.5, 0.5));
         child.setMaterial(mat);
         Back.addChild(child);
         this.transformsHeli.push(Back);
@@ -586,6 +589,7 @@ export class View {
         child = new LeafNode("box", this.scenegraph, "boxtailnode");
         mat = new Material();
         mat.setAmbient(vec3.fromValues(0, 0, 1));
+        mat.setDiffuse(vec3.fromValues(0.5, 0.5, 0.5));
         child.setMaterial(mat);
         BackTail.addChild(child);
         this.transformsHeli.push(BackTail);
@@ -606,6 +610,7 @@ export class View {
             child = new LeafNode("box", this.scenegraph, "boxpropnode");
             mat = new Material();
             mat.setAmbient(vec3.fromValues(1, 0, 1));
+            mat.setDiffuse(vec3.fromValues(0.5, 0.5, 0.5));
             child.setMaterial(mat);
             BackProp.addChild(child);
             this.transformsHeli.push(BackProp);
@@ -625,21 +630,22 @@ export class View {
         child = new LeafNode("box", this.scenegraph, "topstemnode");
         mat = new Material();
         mat.setAmbient(vec3.fromValues(0, 0, 1));
+        mat.setDiffuse(vec3.fromValues(0.5, 0.5, 0.5));
         child.setMaterial(mat);
         TopStem.addChild(child);
         this.transformsHeli.push(TopStem);
-        //groupNode.addChild(this.getBVH(TopStem));
+        groupNode.addChild(this.getBVH(TopStem));
         groupNode.addChild(TopStem);
 
 
         // Add a light to the top stem of the helicopter
         let l: Light = new Light();
-        l.setAmbient([0.0, 0.2, 0.5]);
-        l.setDiffuse([0.0, 0.2, 0.5]);
-        l.setSpecular([0.0, 0.2, 0.5]);
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
         l.setPosition([1, 1, 1, 1]);
         //TopStem.lights
-        this.scenegraph.addLight("topstem-transform", l);
+        //this.scenegraph.addLight("topstem-transform", l);
 
         // Top Prop box
         let TopPropeller: GroupNode = new GroupNode(this.scenegraph, "propeller");
@@ -655,6 +661,7 @@ export class View {
             child = new LeafNode("box", this.scenegraph, "toppropnode");
             mat = new Material();
             mat.setAmbient(vec3.fromValues(1, 0, 1));
+            mat.setDiffuse(vec3.fromValues(0.5, 0.5, 0.5));
             child.setMaterial(mat);
             TopProp.addChild(child);
             this.transformsHeli.push(TopProp);
@@ -902,16 +909,16 @@ export class View {
         // Global static light in the scene
         this.lights = [];
         let l: Light = new Light();
-        l.setAmbient([0.7, 0.1, 0.1]);
-        l.setDiffuse([0.7, 0.1, 0.1]);
-        l.setSpecular([0.7, 0.1, 0.1]);
-        l.setPosition([300, 300, 0, 1]);
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
+        l.setPosition([300, 600, 0, 1]);
         this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
 
         l = new Light();
-        l.setAmbient([0.0, 0.4, 0.1]);
-        l.setDiffuse([0.0, 0.4, 0.1]);
-        l.setSpecular([0.0, 0.4, 0.1]);
+        l.setAmbient([0.5, 0.5, 0.5]);
+        l.setDiffuse([0.5, 0.5, 0.5]);
+        l.setSpecular([0.5, 0.5, 0.5]);
         l.setPosition([-350, 0, 0, 1]);
         this.lights.push(new LightInfo(l, LightCoordinateSystem.World));
 
@@ -935,9 +942,10 @@ export class View {
 
     public draw(): void {
 
-        //this.gl.clearColor(0, 0, 0, 1);
+        this.gl.clearColor(0.7, 0.7, 0.7, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
+        //this.gl.enable(this.gl.CULL_FACE);
 
         
         if(this.isSpot)
@@ -980,7 +988,7 @@ export class View {
         this.drawAnimations();
 
         if(this.cameraMode == CameraMode.Global){
-            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 600, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+            mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 500, 1000), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
             //mat4.lookAt(this.modelview.peek(), vec3.fromValues(0, 0, 300), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
             this.cameraPos[0] = 0;
             this.cameraPos[1] = 0;
